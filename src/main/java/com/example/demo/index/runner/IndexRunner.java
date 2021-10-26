@@ -7,8 +7,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,7 @@ public class IndexRunner implements CommandLineRunner {
                     fileCnt++;
                     String fileName = file.getFileName().toString();
                     List<String> lines = Files.readAllLines(file);
+                    Set<String> fileTerm = new HashSet<>();
                     for (String line : lines) {
                         String[] tokens = line.split(" ");
                         for (String token : tokens) {
@@ -41,6 +44,7 @@ public class IndexRunner implements CommandLineRunner {
                             if (ObjectUtils.isEmpty(token)) {
                                 continue;
                             }
+                            fileTerm.add(token);
                             if (index.containsKey(token)) {
                                 List<DocInfo> docInfoList = index.get(token);
                                 for (DocInfo docInfo : docInfoList) {
@@ -53,7 +57,6 @@ public class IndexRunner implements CommandLineRunner {
                                     DocInfo docInfo = new DocInfo();
                                     docInfo.setFileName(fileName);
                                     docInfo.setTermCnt(1D);
-                                    docInfo.setTotalTermCnt(Double.valueOf(tokens.length));
                                     docInfoList.add(docInfo);
                                     index.put(token, docInfoList);
                                 }
@@ -62,9 +65,16 @@ public class IndexRunner implements CommandLineRunner {
                                 DocInfo docInfo = new DocInfo();
                                 docInfo.setFileName(fileName);
                                 docInfo.setTermCnt(1D);
-                                docInfo.setTotalTermCnt(Double.valueOf(tokens.length));
                                 docInfoList.add(docInfo);
                                 index.put(token, docInfoList);
+                            }
+                        }
+                    }
+                    for(String key : index.keySet()) {
+                        List<DocInfo> docInfoList = index.get(key);
+                        for (DocInfo docInfo : docInfoList) {
+                            if (docInfo.getFileName().equalsIgnoreCase(fileName)) {
+                                docInfo.setTotalTermCnt(Double.valueOf(fileTerm.size()));
                             }
                         }
                     }

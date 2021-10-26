@@ -2,13 +2,12 @@ package com.example.demo.search.controller;
 
 import com.example.demo.index.model.DocInfo;
 import com.example.demo.index.runner.IndexRunner;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StopWatch;
@@ -43,10 +42,11 @@ public class SearchController {
                 }
             }
         }
+        AtomicInteger rank = new AtomicInteger(1);
         result.entrySet().stream()
             .filter(d -> !ObjectUtils.isEmpty(d.getValue()))
             .sorted(Entry.comparingByValue(Comparator.reverseOrder()))
-            .forEach(d -> System.out.println(d.getKey() + " > score : " + Math.round(d.getValue() * 10000) / 10000.0 ));
+            .forEach(d -> System.out.println("Rank [" + rank.getAndIncrement() + "] " + d.getKey() + " > score : " + Math.round(d.getValue() * 10000) / 10000.0 ));
         stopWatch.stop();
         System.out.println("검색 수행시간 : " + stopWatch.getTotalTimeMillis() + "ms");
     }
