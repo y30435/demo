@@ -36,8 +36,14 @@ public class IndexService {
         for(String key : index.keySet()) {
             List<DocInfo> docInfoList = index.get(key);
             for (DocInfo docInfo : docInfoList) {
-                docInfo.setScore(Math.round((( docInfo.getTermCnt() / docInfo.getTotalTermCnt() ) * (1 + Math.log( fileCnt / docInfoList.size() ))) * 10000) / 10000.0 + 1);
+                Double tf = docInfo.getTermCnt() / docInfo.getTotalTermCnt() ;
+                Double idf = 1 + Math.log( Double.valueOf(fileCnt) / Double.valueOf(docInfoList.size()) );
+                docInfo.setScore((tf * idf) + 1);
+                if (key.equalsIgnoreCase("ranking") || key.equalsIgnoreCase("queries")) {
+                    System.out.println("key : >>>>" + docInfo.getFileName() + "tf : " + tf + " >>>>>  idf : "+idf);
+                }
             }
+            System.out.println("key : " + key + "( "+fileCnt+" / "+docInfoList.size()+" ) ["+docInfoList.toString()+"] ");
         }
         return index;
     }
@@ -60,7 +66,7 @@ public class IndexService {
     }
 
     private void tokenToIndex(String fileName, Set<String> fileTerm, String line) {
-        String[] tokens = line.split(" ");
+        String[] tokens = line.split("\\s+");
         for (String token : tokens) {
             boolean done = false;
             token = token.toLowerCase();
